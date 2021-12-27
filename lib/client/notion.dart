@@ -1,15 +1,11 @@
-import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-
-import 'package:app/model.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 var headers = {
   'Notion-Version': '2021-08-16',
   'Content-Type': 'application/json',
-  'Authorization': null
+  'Authorization': dotenv.get("NOTION_API_TOKEN")
 };
 
 var data = {
@@ -21,28 +17,9 @@ var data = {
 
 var body = json.encode(data);
 
-var queryDatabaseUrl =
-    "https://api.notion.com/v1/databases/3afff078e210449d9fc9d49da2d3711d/query";
+var queryDatabaseUrl = dotenv.get("NOTION_API_URL") +
+    "databases/" +
+    dotenv.get("NOTION_TASK_DATABASE_ID") +
+    "/query";
 
-var postTaskUrl = "https://api.notion.com/v1/pages/";
-
-var newTaskData = {
-  "parent": {"database_id": "3afff078e210449d9fc9d49da2d3711d"},
-  "properties": {
-    "name": {
-      "title": [
-        {
-          "text": {"content": "Test title"}
-        }
-      ]
-    },
-    "description": {
-      "rich_text": [
-        {
-          "type": "text",
-          "text": {"content": "Test description"}
-        }
-      ]
-    },
-  }
-};
+var postTaskUrl = dotenv.get("NOTION_API_URL") + "pages/";

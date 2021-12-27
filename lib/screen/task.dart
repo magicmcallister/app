@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 import 'package:app/constant.dart';
 import 'package:app/screen/menu.dart';
+import 'package:app/client/notion.dart';
 
 class TaskScreen extends StatefulWidget {
   const TaskScreen({Key? key}) : super(key: key);
@@ -15,6 +17,29 @@ class TaskScreen extends StatefulWidget {
 class _TaskScreenState extends State<TaskScreen> {
   final _formKey = GlobalKey<FormState>();
   DateTime _dateTime = DateTime.now();
+
+  bool isLoading = false;
+  var newTaskData;
+
+  postTask() async {
+    setState(() {
+      isLoading = true;
+    });
+    var taskBody = json.encode(newTaskData);
+    var response = await http.post(Uri.parse(postTaskUrl),
+        headers: headers, body: taskBody);
+    if (response.statusCode == 200) {
+      setState(() {
+        isLoading = false;
+      });
+    } else {
+      isLoading = false;
+    }
+  }
+
+  Future _postTask() async {
+    postTask();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -129,8 +154,38 @@ class _TaskScreenState extends State<TaskScreen> {
                     onPressed: () {
                       if (_formKey.currentState != null) {
                         if (_formKey.currentState!.validate()) {
-                          print(taskTitle.text);
-                          print(taskDescription.text);
+                          newTaskData = {
+                            "parent": {
+                              "database_id": "3afff078e210449d9fc9d49da2d3711d"
+                            },
+                            "properties": {
+                              "name": {
+                                "title": [
+                                  {
+                                    "text": {"content": taskTitle.text}
+                                  }
+                                ]
+                              },
+                              "description": {
+                                "rich_text": [
+                                  {
+                                    "type": "text",
+                                    "text": {"content": taskDescription.text}
+                                  }
+                                ]
+                              },
+                            }
+                          };
+                          _postTask();
+                          Future.delayed(Duration(milliseconds: 400), () {
+                            // 5 seconds over, navigate to Menu.
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => MenuScreen(
+                                          reloadData: true,
+                                        )));
+                          });
                         } else {}
                       }
                     },
