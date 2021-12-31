@@ -8,14 +8,23 @@ var headers = {
   'Authorization': dotenv.get("NOTION_API_TOKEN")
 };
 
-var data = {
+var emptyDateFilter = {
   "filter": {
     "property": "date",
     "date": {"is_empty": true}
   }
 };
 
-var body = json.encode(data);
+var emptyDate = json.encode(emptyDateFilter);
+
+var notEmptyDateFilter = {
+  "filter": {
+    "property": "date",
+    "date": {"is_empty": true}
+  }
+};
+
+var notEmptyDate = json.encode(notEmptyDateFilter);
 
 var queryDatabaseUrl = dotenv.get("NOTION_API_URL") +
     "databases/" +
