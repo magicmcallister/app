@@ -132,20 +132,22 @@ class _TaskScreenState extends State<TaskScreen> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            TextButton(
-                              style: TextButton.styleFrom(
-                                primary: Colors.black,
+                            Text(
+                                dateText,
+                              style: TextStyle(fontSize: 20, color: Colors.black87),
                               ),
+                            IconButton(
                               onPressed: () {
                                 _dateTime = null;
                                 setState(() {
                                   dateText = "No hay fecha";
                                 });
                               },
-                              child: Text(
-                                dateText,
-                              style: TextStyle(fontSize: 20, color: Colors.grey),
+                              icon: Icon(
+                                Icons.delete,
+                                color: Colors.black.withOpacity(0.7),
                               ),
+                              iconSize: 25.0,
                             )
                           ],
                         ),
