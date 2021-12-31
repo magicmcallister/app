@@ -35,8 +35,8 @@ class _MenuScreenState extends State<MenuScreen> {
     setState(() {
       isLoading = true;
     });
-    var response = await http.post(Uri.parse(queryDatabaseUrl),
-        headers: headers, body: body);
+    var response =
+        await http.post(Uri.parse(queryDatabaseUrl), headers: headers);
     if (response.statusCode == 200) {
       var taskItems = json.decode(response.body)["results"];
       setState(() {
@@ -141,13 +141,17 @@ class _MenuScreenState extends State<MenuScreen> {
               ],
             ),
             Expanded(child: SizedBox()),
-            // Align(
-            //   alignment: Alignment.centerRight,
-            //   child: Text(
-            //     task["properties"]["date"]["date"]["start"].toString(),
-            //     style: TextStyle(fontSize: 14),
-            //   ),
-            // )
+            Align(
+                alignment: Alignment.centerRight,
+                child: (task["properties"]["date"]["date"] == null)
+                    ? Text(
+                        "No date",
+                        style: TextStyle(fontSize: 14),
+                      )
+                    : Text(
+                        task["properties"]["date"]["date"]["start"].toString(),
+                        style: TextStyle(fontSize: 14),
+                      ))
           ],
         ),
       ),

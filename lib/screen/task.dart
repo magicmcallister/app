@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 
 import 'package:app/constant.dart';
 import 'package:app/screen/menu.dart';
@@ -16,16 +17,22 @@ class TaskScreen extends StatefulWidget {
 
 class _TaskScreenState extends State<TaskScreen> {
   final _formKey = GlobalKey<FormState>();
-  DateTime _dateTime = DateTime.now();
+  DateFormat dateFormat = DateFormat("yyyy-MM-dd");
+  var _dateTime;
 
   bool isLoading = false;
-  var newTaskData;
+  late Map newTaskData;
+  String dateText = "No hay fecha";
+
+  TextEditingController taskTitle = new TextEditingController();
+  TextEditingController taskDescription = new TextEditingController();
 
   postTask() async {
     setState(() {
       isLoading = true;
     });
     var taskBody = json.encode(newTaskData);
+    print(taskBody);
     var response = await http.post(Uri.parse(postTaskUrl),
         headers: headers, body: taskBody);
     if (response.statusCode == 200) {
@@ -69,9 +76,6 @@ class _TaskScreenState extends State<TaskScreen> {
   }
 
   Widget buildForm() {
-    TextEditingController taskTitle = new TextEditingController();
-    TextEditingController taskDescription = new TextEditingController();
-
     return Form(
         key: _formKey,
         child: Container(
@@ -122,10 +126,32 @@ class _TaskScreenState extends State<TaskScreen> {
                 height: 20,
               ),
               Container(
-                child: Text(
-                  "${_dateTime.day}/${_dateTime.month}/${_dateTime.year}",
-                  style: TextStyle(fontSize: 20),
-                ),
+                child: (_dateTime == null)
+                    ? Text("No hay fecha", style: TextStyle(fontSize: 20),)
+                    : Container(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                                dateText,
+                              style: TextStyle(fontSize: 20, color: Colors.black87),
+                              ),
+                            IconButton(
+                              onPressed: () {
+                                _dateTime = null;
+                                setState(() {
+                                  dateText = "No hay fecha";
+                                });
+                              },
+                              icon: Icon(
+                                Icons.delete,
+                                color: Colors.black.withOpacity(0.7),
+                              ),
+                              iconSize: 25.0,
+                            )
+                          ],
+                        ),
+                      ),
                 decoration: BoxDecoration(),
               ),
               SizedBox(
@@ -135,18 +161,35 @@ class _TaskScreenState extends State<TaskScreen> {
                   onPressed: () async {
                     DateTime? _newDate = await showDatePicker(
                         context: context,
-                        initialDate: _dateTime,
+                        initialDate: DateTime.now(),
                         firstDate: DateTime(2015),
-                        lastDate: DateTime(2050));
+                        lastDate: DateTime(2050),
+                        builder: (context, child) {
+                          return Theme(data: Theme.of(context).copyWith(
+                            colorScheme: ColorScheme.light(
+                              primary: kPrimaryColor, // header background color
+                              onPrimary: Colors.black, // header text color
+                              onSurface: Colors.black, // body text color
+                            ),
+                            textButtonTheme: TextButtonThemeData(
+                              style: TextButton.styleFrom(
+                                primary: kPrimaryColor, // button text color
+                              ),
+                            ),
+                          ), child: child!)
+                        });
                     if (_newDate != null) {
                       setState(() {
                         _dateTime = _newDate;
+                        setState(() {
+                                 dateText = "${_dateTime.day}/${_dateTime.month}/${_dateTime.year}";
+                                });
                       });
                     }
                   },
                   child: const Text('Select date'),
                   style: ElevatedButton.styleFrom(
-                      primary: kPrimaryColor, fixedSize: Size(350, 60))),
+                      primary: kPrimaryColor,  fixedSize: Size(200, 40))),
               Expanded(child: SizedBox()),
               Align(
                 alignment: Alignment.bottomCenter,
@@ -154,7 +197,38 @@ class _TaskScreenState extends State<TaskScreen> {
                     onPressed: () {
                       if (_formKey.currentState != null) {
                         if (_formKey.currentState!.validate()) {
-                          newTaskData = {
+                          if (_dateTime != null)
+                          {
+                            newTaskData = {
+                            "parent": {
+                              "database_id": "3afff078e210449d9fc9d49da2d3711d"
+                            },
+                            "properties": {
+                              "name": {
+                                "title": [
+                                  {
+                                    "text": {"content": taskTitle.text}
+                                  }
+                                ]
+                              },
+                              "description": {
+                                "rich_text": [
+                                  {
+                                    "type": "text",
+                                    "text": {"content": taskDescription.text}
+                                  }
+                                ]
+                              },
+                              "date": {
+                                "date": {
+                                  "start": dateFormat.format(_dateTime)
+                                }
+                              }
+                            }
+                          };
+                          }
+                          else {
+                            newTaskData = {
                             "parent": {
                               "database_id": "3afff078e210449d9fc9d49da2d3711d"
                             },
@@ -176,6 +250,7 @@ class _TaskScreenState extends State<TaskScreen> {
                               },
                             }
                           };
+                          }
                           _postTask();
                           Future.delayed(Duration(milliseconds: 400), () {
                             // 5 seconds over, navigate to Menu.
@@ -191,7 +266,7 @@ class _TaskScreenState extends State<TaskScreen> {
                     },
                     child: const Text('Submit'),
                     style: ElevatedButton.styleFrom(
-                        primary: kPrimaryColor, fixedSize: Size(100, 50))),
+                        primary: kPrimaryColor, fixedSize: Size(100, 40))),
               )
             ],
           ),
